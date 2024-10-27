@@ -1,11 +1,26 @@
 const express = require("express");
 const { Collection } = require("mongodb");
 const fs = require("node:fs");
+const mongodb = require("mongodb").MongoClient;
+
+//! connectDB  method
+let connectDB = async ()=>{
+    let client = await  mongodb.connect("mongodb://localhost:27017");
+    //establish a connection using ```.connect("connection link")````
+
+    let  database =  client.db("formData");  
+    //creating a database using .db();
+
+    let collection = await database.createCollection("userData");
+    //create a collection using .createCollection("")  inside database;
+
+    return collection;
+}
 
 
 const app = express();
 
-app.use(express.urlencoded({extened: true}));
+app.use(express.urlencoded({extened: true}));  //built-in middleware
 
 
 //! connectDb()
@@ -37,16 +52,31 @@ app.get("*", (req,res)=>{
 })
 
 //app.post se client se data server pe aata hai
-app.post("/abc", (req,res)=>{
+app.post("/abc", async (req,res)=>{
     //? use this endpoint  in the form action
     //? set form method = post
     //?   use name attribute in the input
-   
+
+
     let payload = req.body;   //req.body- >
+    //Destructure
+    const {userName,userEmail,userPassword} = req.body;
+    console.log(userName,userEmail,userPassword);
+   
+   
     console.log(payload);
-    res.send(payload);
+    // res.send(payload);
     // Collection.insertOne(payload)
-})
+
+    let myCollection = await  connectDB();
+    
+    await myCollection.insertOne(payload);
+
+    res.send("form data submited to database!");
+
+
+
+});
 
 
 //listen part
